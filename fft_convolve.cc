@@ -423,7 +423,7 @@ int large_gauss_test(int argc, char **argv){
         (Do these in-place.) */
         cufftPlan1d(&plan, N, CUFFT_C2C, 1);
         cufftExecC2C(plan, dev_input_data, dev_input_data, CUFFT_FORWARD);
-        cufftExecC2C(plan, dev_impulse_data, dev_impulse_data, CUFFT_FORWARD);
+        cufftExecC2C(plan, dev_impulse_v, dev_impulse_v, CUFFT_FORWARD);
 
 
         /* NOTE: This is a function in the fft_convolve_cuda.cu file,
