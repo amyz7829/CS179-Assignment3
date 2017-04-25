@@ -249,8 +249,8 @@ int large_gauss_test(int argc, char **argv){
     Also, unlike in Homework 1, we don't copy our impulse response
     yet, because this is now given to us per-channel. */
     cudaMalloc((void**) &dev_input_data, sizeof(cufftComplex) * padded_length);
-    cudaMalloc((void**) &dev_impulse_v, sizeof(cufftComplex * padded_length));
-    cudaMalloc((void**) &dev_out_data, sizeof(cufftComplex * impulse_length));
+    cudaMalloc((void**) &dev_impulse_v, sizeof(cufftComplex) * padded_length));
+    cudaMalloc((void**) &dev_out_data, sizeof(cufftComplex) * impulse_length));
 
 
 
