@@ -249,7 +249,7 @@ int large_gauss_test(int argc, char **argv){
     Also, unlike in Homework 1, we don't copy our impulse response
     yet, because this is now given to us per-channel. */
     gpuErrchk(cudaMalloc((void**) &dev_input_data, sizeof(cufftComplex) * padded_length));
-    gpuErrchk(cudaMalloc((void**) &dev_impulse_v, sizeof(cufftComplex) * impulse_length));
+    gpuErrchk(cudaMalloc((void**) &dev_impulse_v, sizeof(cufftComplex) * padded_length));
     gpuErrchk(cudaMalloc((void**) &dev_out_data, sizeof(cufftComplex) * padded_length));
 
 
@@ -413,7 +413,7 @@ int large_gauss_test(int argc, char **argv){
         Set the rest of the memory regions to 0 (recommend using cudaMemset).
         */
         gpuErrchk(cudaMemset(dev_input_data +  N, 0, sizeof(cufftComplex) * (padded_length - N)));
-        gpuErrchk(cudaMemset(dev_impulse_v +  impulse_length, 0, sizeof(cufftComplex) * (padded_length - impulse_length)));
+        gpuErrchk(cudaMemset(dev_impulse_v + impulse_length, 0, sizeof(cufftComplex) * (padded_length - impulse_length)));
 
         /* TODO: Create a cuFFT plan for the forward and inverse transforms.
         (You can use the same plan for both, as is done in the lecture examples.)
