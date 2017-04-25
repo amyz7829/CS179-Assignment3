@@ -449,10 +449,9 @@ int large_gauss_test(int argc, char **argv){
         /* TODO: Run the inverse DFT on the output signal.
         (Do this in-place.) */
         cufftExecC2C(plan, dev_out_data, dev_out_data, CUFFT_INVERSE);
-
         cout<<"ran inverse"<<endl;
         /* TODO: Destroy the cuFFT plan. */
-        cufftDestroy(plan);
+        gpuErrchk(cufftDestroy(plan));
         cout<<"destroyed plan"<<endl;
 
         // For testing and timing-control purposes only
