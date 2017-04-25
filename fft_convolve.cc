@@ -248,9 +248,9 @@ int large_gauss_test(int argc, char **argv){
 
     Also, unlike in Homework 1, we don't copy our impulse response
     yet, because this is now given to us per-channel. */
-    gpuErrChk(cudaMalloc((void**) &dev_input_data, sizeof(cufftComplex) * padded_length));
-    gpuErrChk(cudaMalloc((void**) &dev_impulse_v, sizeof(cufftComplex) * impulse_length));
-    gpuErrChk(cudaMalloc((void**) &dev_out_data, sizeof(cufftComplex) * padded_length));
+    gpuErrchk(cudaMalloc((void**) &dev_input_data, sizeof(cufftComplex) * padded_length));
+    gpuErrchk(cudaMalloc((void**) &dev_impulse_v, sizeof(cufftComplex) * impulse_length));
+    gpuErrchk(cudaMalloc((void**) &dev_out_data, sizeof(cufftComplex) * padded_length));
 
 
 
@@ -391,7 +391,7 @@ int large_gauss_test(int argc, char **argv){
         Note that input_data only stores
         x[n] as read from the input audio file, and not the padding,
         so be careful with the size of your memory copy. */
-        gpuErrChk(cudaMemcpy(dev_input_data, input_data, sizeof(cufftComplex) * N,
+        gpuErrchk(cudaMemcpy(dev_input_data, input_data, sizeof(cufftComplex) * N,
         cudaMemcpyHostToDevice));
 
 
@@ -404,7 +404,7 @@ int large_gauss_test(int argc, char **argv){
         and not the padding, so again, be careful with the size
         of your memory copy. (It's not the same size as the input_data copy.)
         */
-        gpuErrChk(cudaMemcpy(dev_impulse_v, impulse_data, sizeof(cufftComplex) * impulse_length,
+        gpuErrchk(cudaMemcpy(dev_impulse_v, impulse_data, sizeof(cufftComplex) * impulse_length,
         cudaMemcpyHostToDevice));
 
         /* TODO: We're only copying to part of the allocated
@@ -412,8 +412,8 @@ int large_gauss_test(int argc, char **argv){
         (See Lecture 9 for details on padding.)
         Set the rest of the memory regions to 0 (recommend using cudaMemset).
         */
-        gpuErrChk(cudaMemset(dev_input_data + sizeof(cufftComplex) * N, 0, padded_length - N));
-        gpuErrChk(cudaMemset(dev_impulse_v + sizeof(cufftComplex) * impulse_length, 0, padded_length - impulse_length));
+        gpuErrchk(cudaMemset(dev_input_data + sizeof(cufftComplex) * N, 0, padded_length - N));
+        gpuErrchk(cudaMemset(dev_impulse_v + sizeof(cufftComplex) * impulse_length, 0, padded_length - impulse_length));
 
         /* TODO: Create a cuFFT plan for the forward and inverse transforms.
         (You can use the same plan for both, as is done in the lecture examples.)
