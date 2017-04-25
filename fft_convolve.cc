@@ -451,7 +451,7 @@ int large_gauss_test(int argc, char **argv){
         cufftExecC2C(plan, dev_out_data, dev_out_data, CUFFT_INVERSE);
         cout<<"ran inverse"<<endl;
         /* TODO: Destroy the cuFFT plan. */
-        gpuErrchk(cufftDestroy(plan));
+        cufftDestroy(plan);
         cout<<"destroyed plan"<<endl;
 
         // For testing and timing-control purposes only
@@ -459,7 +459,7 @@ int large_gauss_test(int argc, char **argv){
 
 
         STOP_RECORD_TIMER(gpu_time_ms_convolve);
-        
+
         cout << "Comparing..." << endl;
 
 #if 1
