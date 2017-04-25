@@ -422,7 +422,7 @@ int large_gauss_test(int argc, char **argv){
 
         /* TODO: Run the forward DFT on the input signal and the impulse response.
         (Do these in-place.) */
-        cufftPlan1d(&plan, padded_length, CUFFT_C2C, 1);
+        cout<<cufftPlan1d(&plan, padded_length, CUFFT_C2C, 1)<<endl;
         cufftExecC2C(plan, dev_input_data, dev_input_data, CUFFT_FORWARD);
         cufftExecC2C(plan, dev_impulse_v, dev_impulse_v, CUFFT_FORWARD);
 
