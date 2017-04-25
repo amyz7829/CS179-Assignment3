@@ -9,13 +9,13 @@
 #include "fft_convolve_cuda.cuh"
 
 
-/* 
+/*
 Atomic-max function. You may find it useful for normalization.
 
 We haven't really talked about this yet, but __device__ functions not
 only are run on the GPU, but are called from within a kernel.
 
-Source: 
+Source:
 http://stackoverflow.com/questions/17399119/
 cant-we-use-atomic-operations-for-floating-point-variables-in-cuda
 */
@@ -35,16 +35,15 @@ __device__ static float atomicMax(float* address, float val)
 
 __global__
 void
-cudaProdScaleKernel(const cufftComplex *raw_data, const cufftComplex *impulse_v, 
+cudaProdScaleKernel(const cufftComplex *raw_data, const cufftComplex *impulse_v,
     cufftComplex *out_data,
     int padded_length) {
 
-
     /* TODO: Implement the point-wise multiplication and scaling for the
-    FFT'd input and impulse response. 
+    FFT'd input and impulse response.
 
     Recall that these are complex numbers, so you'll need to use the
-    appropriate rule for multiplying them. 
+    appropriate rule for multiplying them.
 
     Also remember to scale by the padded length of the signal
     (see the notes for Question 1).
@@ -53,6 +52,13 @@ cudaProdScaleKernel(const cufftComplex *raw_data, const cufftComplex *impulse_v,
     resilient to varying numbers of threads.
 
     */
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    while(idx < padded_length){
+      for(int i = 0; i < padded_length; i++){
+        out_data[idx].x += (raw_data[i].x * impulse_v[(idx - i) % padded_length].y) -
+                            raw_data[i].y * impulse_v[(idx - i) % padded_length.x];
+      }
+    }
 }
 
 __global__
@@ -64,7 +70,7 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
     normalization (dividing by maximum).
 
     There are many ways to do this reduction, and some methods
-    have much better performance than others. 
+    have much better performance than others.
 
     For this section: Please explain your approach to the reduction,
     including why you chose the optimizations you did
@@ -83,7 +89,32 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
 
     */
 
+    /* Step 1: Find the max value in out data through reduction. Use sequential
+       padding for each block, and make each warp read two blocks? (suggested
+       on Nvidia site). This starts by storing out_data length / 2 values in
+       shared data, and then slowly cutting by half each time until the max
+       value is found. Keep in mind reading in a coalesced way, and also
+       avoiding bank conflicts! Sequential should prevent bank conflicts.
 
+       Step 2: After this is done, divide every value in the original out data
+       array by the found value. Not much better way than just doing it per
+       thread?
+       */
+       int tid = threadIdx.x;
+       int idx = blockIdx.x * (2 * blockDim.x) + threadIdx.x;
+       int data_size = blockDim.x;
+       __shared__ float data[data_size];
+
+       float localMax = fmaxf(out_data[idx], out_data[idx + blockDim.x]);
+       data[tid] = localMax;
+       __syncthreads();
+
+       if(tid == 0){
+         for(unsigned int threadIndex = 1; threadIndex < blockDim.x, threadIndex++){
+           localMax = fmax(localMax, data[threadIndex]);
+         }
+         atomicMax(max_abs_val, localMax);
+       }
 }
 
 __global__
@@ -92,10 +123,16 @@ cudaDivideKernel(cufftComplex *out_data, float *max_abs_val,
     int padded_length) {
 
     /* TODO 2: Implement the division kernel. Divide all
-    data by the value pointed to by max_abs_val. 
+    data by the value pointed to by max_abs_val.
 
     This kernel should be quite short.
     */
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+    while(idx < padded_length){
+      out_data[idx] /= *max_abs_val;
+      idx += blockIdx.x * blockDim.x;
+    }
 
 }
 
@@ -106,8 +143,9 @@ void cudaCallProdScaleKernel(const unsigned int blocks,
         const cufftComplex *impulse_v,
         cufftComplex *out_data,
         const unsigned int padded_length) {
-        
-    /* TODO: Call the element-wise product and scaling kernel. */
+
+    cudaProdScaleKernel<<<blocks, threadsPerBlock>>>(raw_data, impulse_v, out_data,
+    padded_length);
 }
 
 void cudaCallMaximumKernel(const unsigned int blocks,
@@ -115,9 +153,9 @@ void cudaCallMaximumKernel(const unsigned int blocks,
         cufftComplex *out_data,
         float *max_abs_val,
         const unsigned int padded_length) {
-        
 
-    /* TODO 2: Call the max-finding kernel. */
+
+    cudaMaximumKernel<<<blocks, threadsPerBlock>>>(out_data, max_abs_val, padded_length);
 
 }
 
@@ -127,6 +165,6 @@ void cudaCallDivideKernel(const unsigned int blocks,
         cufftComplex *out_data,
         float *max_abs_val,
         const unsigned int padded_length) {
-        
-    /* TODO 2: Call the division kernel. */
+
+    cudaDivideKernel<<<blocks, threadsPerBlock>>>(out_data, max_abs_val, padded_length);
 }
