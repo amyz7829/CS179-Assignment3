@@ -56,9 +56,9 @@ cudaProdScaleKernel(const cufftComplex *raw_data, const cufftComplex *impulse_v,
     while(idx < padded_length){
       for(int i = 0; i < padded_length; i++){
         out_data[idx].x += ((raw_data[i].x * impulse_v[(idx - i) % padded_length].x) -
-                            raw_data[i].y * impulse_v[(idx - i) % padded_length].y)
+                            raw_data[i].y * impulse_v[(idx - i) % padded_length].y);
         out_data[idx].y += ((raw_data[i].x * impulse_v[(idx - i) % padded_length].y) -
-                            raw_data[i].y * impulse_v[(idx - i) % padded_length].x)
+                            raw_data[i].y * impulse_v[(idx - i) % padded_length].x);
       }
       out_data[idx].x = out_data[idx].x / padded_length;
       out_data[idx].y = out_data[idx].y / padded_length;
@@ -109,14 +109,14 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
        int tid = threadIdx.x;
        int idx = blockIdx.x * (2 * blockDim.x) + threadIdx.x;
        int data_size = blockDim.x;
-       __shared__ float data[data_size];
+       __shared__ float data[32];
 
        float localMax = fmaxf(out_data[idx].x, out_data[idx + blockDim.x].x);
        data[tid] = localMax;
        __syncthreads();
 
        if(tid == 0){
-         for(unsigned int threadIndex = 1; threadIndex < blockDim.x, threadIndex++){
+         for(unsigned int threadIndex = 1; threadIndex < blockDim.x; threadIndex++){
            localMax = fmax(localMax, data[threadIndex]);
          }
          atomicMax(max_abs_val, localMax);
@@ -136,7 +136,7 @@ cudaDivideKernel(cufftComplex *out_data, float *max_abs_val,
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
     while(idx < padded_length){
-      out_data[idx] /= *max_abs_val;
+      out_data[idx].x = out_data[idx].x / *max_abs_val;
       idx += blockIdx.x * blockDim.x;
     }
 
