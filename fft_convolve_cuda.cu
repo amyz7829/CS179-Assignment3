@@ -108,7 +108,7 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
        */
        int tid = threadIdx.x;
        int idx = blockIdx.x * (2 * blockDim.x) + threadIdx.x;
-       __shared__ float data[32];
+       extern __shared__ float data[];
 
        float localMax = fmaxf(out_data[idx].x, out_data[idx + blockDim.x].x);
        data[tid] = localMax;
@@ -160,7 +160,7 @@ void cudaCallMaximumKernel(const unsigned int blocks,
         const unsigned int padded_length) {
 
 
-    cudaMaximumKernel<<<blocks, threadsPerBlock>>>(out_data, max_abs_val, padded_length);
+    cudaMaximumKernel<<<blocks, threadsPerBlock, threadsPerBlock>>>(out_data, max_abs_val, padded_length);
 
 }
 
