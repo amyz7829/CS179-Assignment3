@@ -443,6 +443,7 @@ int large_gauss_test(int argc, char **argv){
                 cerr << "No kernel error detected" << endl;
         }
 
+        cout<<"done the prodscale kernel"<<endl;
 
 
 
@@ -562,9 +563,10 @@ int large_gauss_test(int argc, char **argv){
         /* NOTE: This is a function in the fft_convolve_cuda.cu file,
         where you'll fill in the kernel call for finding the maximum
         of the output signal. */
+        cout<<"about to call maximum kernel"<<endl;
         cudaCallMaximumKernel(blocks, local_size, dev_out_data,
             dev_max_abs_val, padded_length);
-
+            cout<<"done max kernel"<<endl;
         // Check for errors on kernel call
         err = cudaGetLastError();
         if  (cudaSuccess != err){
@@ -577,9 +579,10 @@ int large_gauss_test(int argc, char **argv){
         /* NOTE: This is a function in the fft_convolve_cuda.cu file,
         where you'll fill in the kernel call for dividing the output
         signal by the previously-calculated maximum. */
+        cout<<"about to divide kernel"<<endl;
         cudaCallDivideKernel(blocks, local_size, dev_out_data,
             dev_max_abs_val, padded_length);
-
+            cout<<"done divide"<<endl;
         // Check for errors on kernel call
         err = cudaGetLastError();
         if  (cudaSuccess != err){
