@@ -60,8 +60,11 @@ cudaProdScaleKernel(const cufftComplex *raw_data, const cufftComplex *impulse_v,
       float c = impulse_v[idx].x;
       float d = impulse_v[idx].y;
 
-      out_data[idx].x = (a * c - b * d) / (float) padded_length;
-      out_data[idx].y = (a * d - b * c) / (float) padded_length;
+      cufftComplex ans;
+      ans.x = (a * c - b * d) / (float) padded_length;
+      ans.y = (a * d - b * c) / (float) padded_length;
+
+      out_data[idx] = ans;
 
       idx += blockDim.x * gridDim.x;
     }
@@ -94,16 +97,17 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
 
     */
 
-    /* Step 1: Find the max value in out data through reduction. Use sequential
-       padding for each block, and make each warp read two blocks? (suggested
-       on Nvidia site). This starts by storing out_data length / 2 values in
-       shared data, and then slowly cutting by half each time until the max
-       value is found. Keep in mind reading in a coalesced way, and also
-       avoiding bank conflicts! Sequential should prevent bank conflicts.
+      /*
+          My first optimization was to ensure that in the first step, every thread had a
+          job, preventing warp divergence, and also using all resources. Every thread
+          looks at the nth block and the (n + 1)th block, and compares the mth values in
+          these two blocks. It then stores the larger of these two values to an array
+          in shared memory. This array is the size of the block, as we are halving from
+          two blocks.
 
-       Step 2: After this is done, divide every value in the original out data
-       array by the found value. Not much better way than just doing it per
-       thread?
+          We then must unfortunately warp diverge, and find the maximum value in each
+          block by using a for loop. After this is done, we run atomic max, finding the
+          maximum value across all blocks.
        */
        int tid = threadIdx.x;
        int idx = blockIdx.x * (2 * blockDim.x) + threadIdx.x;
@@ -131,9 +135,9 @@ cudaDivideKernel(cufftComplex *out_data, float *max_abs_val,
 
     This kernel should be quite short.
     */
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    uint idx = blockIdx.x * blockDim.x + threadIdx.x;
 
-    while(idx < padded_length){
+    while(idx < (uint) padded_length){
       out_data[idx].x = out_data[idx].x / *max_abs_val;
       idx += gridDim.x * blockDim.x;
     }
@@ -158,7 +162,11 @@ void cudaCallMaximumKernel(const unsigned int blocks,
         float *max_abs_val,
         const unsigned int padded_length) {
 
-
+    /*
+      This is called with only half of the threads per block because we want each thread
+      to initially start by handling two values at once (by looking at two blocks, and
+      comparing the nth element of each)
+    */
     cudaMaximumKernel<<<blocks, threadsPerBlock / 2, threadsPerBlock>>>(out_data, max_abs_val, padded_length);
 
 }
