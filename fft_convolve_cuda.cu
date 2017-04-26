@@ -125,6 +125,7 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
            }
            atomicMax(max_abs_val, localMax);
          }
+         idx += gridDim.x * blockDim.x;
        }
 }
 
