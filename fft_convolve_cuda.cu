@@ -37,7 +37,7 @@ __global__
 void
 cudaProdScaleKernel(const cufftComplex *raw_data, const cufftComplex *impulse_v,
     cufftComplex *out_data,
-    int padded_length) {
+    const unsigned int padded_length) {
 
     /* TODO: Implement the point-wise multiplication and scaling for the
     FFT'd input and impulse response.
@@ -52,9 +52,9 @@ cudaProdScaleKernel(const cufftComplex *raw_data, const cufftComplex *impulse_v,
     resilient to varying numbers of threads.
 
     */
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    uint idx = blockIdx.x * blockDim.x + threadIdx.x;
     while(idx < padded_length){
-      for(int i = 0; i < padded_length; i++){
+      for(uint i = 0; i < padded_length; i++){
         out_data[idx].x += raw_data[i].x * impulse_v[(padded_length + idx - i) % padded_length].x -
                            raw_data[i].y * impulse_v[(padded_length + idx - i) % padded_length].y;
         out_data[idx].y += raw_data[i].x * impulse_v[(padded_length + idx - i) % padded_length].y -
