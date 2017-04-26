@@ -63,7 +63,7 @@ cudaProdScaleKernel(const cufftComplex *raw_data, const cufftComplex *impulse_v,
       out_data[idx].x = out_data[idx].x / padded_length;
       out_data[idx].y = out_data[idx].y / padded_length;
 
-      idx += blockIdx.x * blockDim.x;
+      idx += blockDim.x * gridDim.x;
     }
 }
 
