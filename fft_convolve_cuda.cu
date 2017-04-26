@@ -70,7 +70,6 @@ __global__
 void
 cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
     int padded_length) {
-
     /* TODO 2: Implement the maximum-finding and subsequent
     normalization (dividing by maximum).
 

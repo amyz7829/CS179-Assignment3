@@ -608,7 +608,7 @@ int large_gauss_test(int argc, char **argv){
         cout << "CPU normalization constant: " << max_abs_val << endl;
         cout << "GPU normalization constant: " << max_abs_val_fromGPU << endl;
 
-        if ( fabs(max_abs_val_fromGPU - max_abs_val) > 1e-6 ){
+        if ( fabs(max_abs_val_fromGPU - max_abs_val) > 1e-5 ){
             cerr << "!! Incorrect normalization" << endl;
         }
 
