@@ -114,11 +114,11 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
       extern __shared__ float data[];
 
        data[tid] = out_data[idx].x;
-       float localMax = data[tid];
 
        __syncthreads();
 
        if(tid == 0){
+         float localMax = data[tid];
          for(unsigned int threadIndex = 1; threadIndex < blockDim.x; threadIndex++){
            localMax = fmax(localMax, data[threadIndex]);
          }
