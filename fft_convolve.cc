@@ -178,7 +178,7 @@ int large_gauss_test(int argc, char **argv){
     parameter to control how many trials we run. */
 
     int nChannels = 2;      // Can set as the number of trials
-    int N = 1e6;        // Can set how many data points arbitrarily
+    int N = 1e5;        // Can set how many data points arbitrarily
     int impulse_length = GAUSSIAN_SIZE;
 
 #endif
@@ -608,7 +608,7 @@ int large_gauss_test(int argc, char **argv){
         cout << "CPU normalization constant: " << max_abs_val << endl;
         cout << "GPU normalization constant: " << max_abs_val_fromGPU << endl;
 
-        if ( fabs(max_abs_val_fromGPU - max_abs_val) > 1e-5 ){
+        if ( fabs(max_abs_val_fromGPU - max_abs_val) > 1e-6 ){
             cerr << "!! Incorrect normalization" << endl;
         }
 
