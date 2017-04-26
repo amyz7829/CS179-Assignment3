@@ -158,7 +158,7 @@ void cudaCallMaximumKernel(const unsigned int blocks,
         const unsigned int padded_length) {
 
 
-    cudaMaximumKernel<<<blocks, threadsPerBlock, threadsPerBlock>>>(out_data, max_abs_val, padded_length);
+    cudaMaximumKernel<<<blocks, threadsPerBlock / 2, threadsPerBlock>>>(out_data, max_abs_val, padded_length);
 
 }
 
