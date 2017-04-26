@@ -109,28 +109,20 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
           block by using a for loop. After this is done, we run atomic max, finding the
           maximum value across all blocks.
        */
-       int idx = blockIdx.x * blockDim.x + threadIdx.x;
-       float localMax = out_data[idx].x;
+       int tid = threadIdx.x;
+      int idx = blockIdx.x * (2 * blockDim.x) + threadIdx.x;
+      __shared__ float data[blockDim.x];
 
+       float localMax = fmaxf(out_data[idx].x, out_data[idx + blockDim.x].x);
+       data[tid] = localMax;
        __syncthreads();
 
-       while(idx < padded_length){
+       if(tid == 0){
+         for(unsigned int threadIndex = 1; threadIndex < blockDim.x; threadIndex++){
+           localMax = fmax(localMax, data[threadIndex]);
+         }
          atomicMax(max_abs_val, localMax);
-         idx += gridDim.x * blockDim.x;
        }
-      //  int idx = blockIdx.x * (2 * blockDim.x) + threadIdx.x;
-      //  extern __shared__ float data[];
-      //
-      //  float localMax = fmaxf(out_data[idx].x, out_data[idx + blockDim.x].x);
-      //  data[tid] = localMax;
-      //  __syncthreads();
-      //
-      //  if(tid == 0){
-      //    for(unsigned int threadIndex = 1; threadIndex < blockDim.x; threadIndex++){
-      //      localMax = fmax(localMax, data[threadIndex]);
-      //    }
-      //    atomicMax(max_abs_val, localMax);
-      //  }
 }
 
 __global__
