@@ -119,9 +119,9 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
 
        if(tid == 0){
          float localMax = data[tid];
-         for(unsigned int threadIndex = 1; threadIndex < blockDim.x; threadIndex++){
-           localMax = fmax(localMax, data[threadIndex]);
-         }
+        //  for(unsigned int threadIndex = 1; threadIndex < blockDim.x; threadIndex++){
+        //    localMax = fmax(localMax, data[threadIndex]);
+        //  }
          atomicMax(max_abs_val, localMax);
        }
 }
