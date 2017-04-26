@@ -171,7 +171,7 @@ void cudaCallMaximumKernel(const unsigned int blocks,
       to initially start by handling two values at once (by looking at two blocks, and
       comparing the nth element of each)
     */
-    cudaMaximumKernel<<<blocks, threadsPerBlock, threadsPerBlock>>>(out_data, max_abs_val, padded_length);
+    cudaMaximumKernel<<<blocks, threadsPerBlock, threadsPerBlock * sizeof(float)>>>(out_data, max_abs_val, padded_length);
 
 }
 
